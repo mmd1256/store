@@ -1,0 +1,549 @@
+                        <li>برای اندازه‌گیری پا، در آخر روز اندازه‌گیری کنید زیرا پا معمولاً در طول روز متورم می‌شود.</li>
+                        <li>اگر بین دو سایز قرار دارید، سایز بزرگتر را انتخاب کنید.</li>
+                        <li>برای کفش‌های ورزشی، معمولاً نیم سایز بزرگتر توصیه می‌شود.</li>
+                    </ul>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- مدال بزرگنمایی تصویر -->
+    <div class="image-modal" id="image-modal">
+        <button class="modal-close">&times;</button>
+        <div class="modal-content">
+            <img src="" alt="" class="modal-main-image" id="modal-main-image">
+            <div class="modal-thumbs" id="modal-thumbs">
+                <img src="ادیداس1.jpg" alt="کفش ادیداس - نمای 1" class="modal-thumb active" onclick="changeModalImage(this)">
+                <img src="ادیداس2.jpg" alt="کفش ادیداس - نمای 2" class="modal-thumb" onclick="changeModalImage(this)">
+                <img src="ادیداس3.jpg" alt="کفش ادیداس - نمای 3" class="modal-thumb" onclick="changeModalImage(this)">
+                <img src="ادیداس4.jpg" alt="کفش ادیداس - نمای 4" class="modal-thumb" onclick="changeModalImage(this)">
+                <img src="ادیداس5.jpg" alt="کفش ادیداس - نمای 5" class="modal-thumb" onclick="changeModalImage(this)">
+            </div>
+        </div>
+    </div>
+
+    <!-- نوتیفیکیشن -->
+    <div id="notification" class="notification">
+        <i class="fas fa-check-circle"></i>
+        <span class="notification-message">محصول به سبد خرید اضافه شد</span>
+        <button class="close-notification">&times;</button>
+    </div>
+
+    <!-- اسکریپت‌ها -->
+    <script>
+        // اسکریپت اصلی صفحه
+        document.addEventListener('DOMContentLoaded', function() {
+            // راه‌اندازی اسلایدر
+            const mainSwiper = new Swiper('.main-swiper', {
+                slidesPerView: 1,
+                spaceBetween: 10,
+                loop: true,
+                pagination: {
+                    el: '.swiper-pagination',
+                    clickable: true,
+                },
+                navigation: {
+                    nextEl: '.swiper-button-next',
+                    prevEl: '.swiper-button-prev',
+                },
+            });
+
+            // انتخاب تصاویر کوچک
+            const thumbItems = document.querySelectorAll('.thumb-item');
+            thumbItems.forEach((item, index) => {
+                item.addEventListener('click', function() {
+                    mainSwiper.slideTo(index + 1);
+                    thumbItems.forEach(thumb => thumb.classList.remove('active'));
+                    this.classList.add('active');
+                });
+            });
+            
+            // همگام‌سازی تصاویر کوچک با اسلایدر
+            mainSwiper.on('slideChange', function() {
+                const realIndex = mainSwiper.realIndex;
+                thumbItems.forEach(thumb => thumb.classList.remove('active'));
+                document.querySelector(`.thumb-item[data-index="${realIndex}"]`)?.classList.add('active');
+            });
+
+            // بزرگنمایی تصویر
+            const mainImages = document.querySelectorAll('.main-image');
+            const imageModal = document.getElementById('image-modal');
+            const modalMainImage = document.getElementById('modal-main-image');
+            const modalClose = document.querySelector('.modal-close');
+
+            mainImages.forEach(img => {
+                img.addEventListener('click', function() {
+                    imageModal.style.display = 'block';
+                    modalMainImage.src = this.getAttribute('data-fullimg') || this.src;
+                    document.body.style.overflow = 'hidden';
+                    
+                    // انتخاب تصویر فعال در مدال
+                    const modalThumbs = document.querySelectorAll('.modal-thumb');
+                    modalThumbs.forEach(thumb => thumb.classList.remove('active'));
+                    const activeIndex = mainSwiper.realIndex;
+                    modalThumbs[activeIndex]?.classList.add('active');
+                });
+            });
+
+            modalClose.addEventListener('click', function() {
+                imageModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            });
+
+            // تب‌های اطلاعات بیشتر
+            const tabButtons = document.querySelectorAll('.tab-button');
+            const tabContents = document.querySelectorAll('.tab-content');
+            
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const tabId = this.getAttribute('data-tab');
+                    
+                    tabButtons.forEach(btn => btn.classList.remove('active'));
+                    tabContents.forEach(content => content.classList.remove('active'));
+                    
+                    this.classList.add('active');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+
+            // راهنمای سایز
+            const sizeGuideButton = document.querySelector('.size-guide');
+            const sizeGuideModal = document.getElementById('size-guide-modal');
+            const closeSizeGuide = document.querySelector('.close-size-guide');
+            
+            sizeGuideButton.addEventListener('click', function() {
+                sizeGuideModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+            
+            closeSizeGuide.addEventListener('click', function() {
+                sizeGuideModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            });
+
+            // انتخاب سایز
+            const sizeOptions = document.querySelectorAll('.size-option:not(.sold-out)');
+            sizeOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    sizeOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+
+            // انتخاب رنگ
+            const colorOptions = document.querySelectorAll('.color-option');
+            colorOptions.forEach(option => {
+                option.addEventListener('click', function() {
+                    colorOptions.forEach(opt => opt.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+
+            // کنترل تعداد
+            const decreaseBtn = document.querySelector('.quantity-btn.decrease');
+            const increaseBtn = document.querySelector('.quantity-btn.increase');
+            const quantityDisplay = document.querySelector('.quantity-display');
+            
+            decreaseBtn.addEventListener('click', function() {
+                let quantity = parseInt(quantityDisplay.textContent);
+                if (quantity > 1) {
+                    quantityDisplay.textContent = quantity - 1;
+                }
+            });
+            
+            increaseBtn.addEventListener('click', function() {
+                let quantity = parseInt(quantityDisplay.textContent);
+                if (quantity < 10) {
+                    quantityDisplay.textContent = quantity + 1;
+                }
+            });
+
+            // سبد خرید
+            const cartButton = document.getElementById('cart-button');
+            const headerCartBtn = document.getElementById('header-cart-btn');
+            const cartModal = document.getElementById('cart-modal');
+            const closeCart = document.querySelector('.close-cart');
+            const addToCartBtn = document.getElementById('add-to-cart-btn');
+            const cartItems = document.querySelector('.cart-items');
+            const cartCount = document.getElementById('cart-count');
+            const headerCartCount = document.querySelector('.header-cart-count');
+            const totalItems = document.getElementById('total-items');
+            const subtotalElement = document.getElementById('subtotal');
+            const totalPriceElement = document.getElementById('total-price');
+            const clearCartBtn = document.getElementById('clear-cart');
+            const notification = document.getElementById('notification');
+            const closeNotification = document.querySelector('.close-notification');
+            
+            // Загрузить корзину из localStorage
+            let cart = JSON.parse(localStorage.getItem('cart')) || [];
+            
+            function updateCartDisplay() {
+                const totalItemsCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+                cartCount.textContent = totalItemsCount;
+                headerCartCount.textContent = totalItemsCount;
+                totalItems.textContent = totalItemsCount;
+                
+                if (cart.length === 0) {
+                    cartItems.innerHTML = '<div class="empty-cart"><i class="fas fa-shopping-basket"></i><p>سبد خرید شما خالی است</p></div>';
+                    return;
+                }
+                
+                cartItems.innerHTML = cart.map(item => `
+                    <div class="cart-item" data-id="${item.id}">
+                        <img src="${item.image}" alt="${item.title}">
+                        <div class="cart-item-details">
+                            <h3 class="cart-item-title">${item.title}</h3>
+                            <div class="cart-item-meta">
+                                ${item.color ? `<span>رنگ: ${item.color}</span> | ` : ''}
+                                <span>سایز: ${item.size}</span>
+                            </div>
+                            <div class="cart-item-quantity">
+                                <button onclick="updateItemQuantity(${item.id}, 'decrease')">-</button>
+                                <span>${item.quantity}</span>
+                                <button onclick="updateItemQuantity(${item.id}, 'increase')">+</button>
+                            </div>
+                            <div class="cart-item-price">${formatPrice(item.price * item.quantity)}</div>
+                        </div>
+                        <button class="remove-item" onclick="removeFromCart(${item.id})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `).join('');
+                
+                updateCartTotals();
+            }
+            
+            function updateCartTotals() {
+                const subtotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+                const discount = 0; // محاسبه تخفیف
+                const total = subtotal - discount;
+                
+                subtotalElement.textContent = formatPrice(subtotal);
+                document.getElementById('discount').textContent = formatPrice(discount);
+                totalPriceElement.textContent = formatPrice(total);
+            }
+            
+            function formatPrice(price) {
+                return price.toLocaleString('fa-IR') + ' تومان';
+            }
+            
+            function extractPrice(priceString) {
+                return parseInt(priceString.replace(/[^\d]/g, ''));
+            }
+            
+            function showNotification(message, type = 'success') {
+                const notificationMessage = notification.querySelector('.notification-message');
+                notificationMessage.textContent = message;
+                notification.className = `notification ${type}`;
+                notification.classList.add('show');
+                
+                if (type === 'success') {
+                    notification.querySelector('.notification-icon').className = 'fas fa-check-circle notification-icon';
+                } else {
+                    notification.querySelector('.notification-icon').className = 'fas fa-exclamation-circle notification-icon';
+                }
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                }, 3000);
+            }
+            
+            cartButton.addEventListener('click', function() {
+                cartModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+            
+            headerCartBtn.addEventListener('click', function() {
+                cartModal.style.display = 'flex';
+                document.body.style.overflow = 'hidden';
+            });
+            
+            closeCart.addEventListener('click', function() {
+                cartModal.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            });
+            
+            addToCartBtn.addEventListener('click', function() {
+                const selectedSize = document.querySelector('.size-option.selected');
+                if (!selectedSize) {
+                    showNotification('لطفاً سایز را انتخاب کنید', 'error');
+                    return;
+                }
+                
+                const productTitle = document.querySelector('.product-title').textContent;
+                const productPrice = extractPrice(document.querySelector('.current-price').textContent);
+                const productImage = document.querySelector('.main-swiper .swiper-slide-active img').src;
+                const quantity = parseInt(document.querySelector('.quantity-display').textContent);
+                const size = selectedSize.textContent;
+                const selectedColor = document.querySelector('.color-option.selected');
+                const color = selectedColor ? selectedColor.getAttribute('title') : null;
+                
+                const existingItemIndex = cart.findIndex(item => 
+                    item.title === productTitle && item.size === size && item.color === color
+                );
+                
+                if (existingItemIndex > -1) {
+                    cart[existingItemIndex].quantity += quantity;
+                } else {
+                    const newItem = {
+                        id: Date.now(),
+                        title: productTitle,
+                        price: productPrice,
+                        image: productImage,
+                        size: size,
+                        color: color,
+                        quantity: quantity
+                    };
+                    cart.push(newItem);
+                }
+                
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartDisplay();
+                showNotification('محصول به سبد خرید اضافه شد');
+            });
+            
+            clearCartBtn.addEventListener('click', function() {
+                if (confirm('آیا از خالی کردن سبد خرید مطمئن هستید؟')) {
+                    cart = [];
+                    localStorage.setItem('cart', JSON.stringify(cart));
+                    updateCartDisplay();
+                    showNotification('سبد خرید خالی شد');
+                }
+            });
+            
+            closeNotification.addEventListener('click', function() {
+                notification.classList.remove('show');
+            });
+            
+            // تعریف توابع مورد نیاز برای استفاده در HTML
+            window.updateItemQuantity = function(id, action) {
+                const itemIndex = cart.findIndex(item => item.id === id);
+                if (itemIndex === -1) return;
+                
+                if (action === 'increase') {
+                    cart[itemIndex].quantity = Math.min(cart[itemIndex].quantity + 1, 10);
+                } else if (action === 'decrease') {
+                    if (cart[itemIndex].quantity > 1) {
+                        cart[itemIndex].quantity--;
+                    } else {
+                        window.removeFromCart(id);
+                        return;
+                    }
+                }
+                
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartDisplay();
+            };
+            
+            window.removeFromCart = function(id) {
+                cart = cart.filter(item => item.id !== id);
+                localStorage.setItem('cart', JSON.stringify(cart));
+                updateCartDisplay();
+                showNotification('محصول از سبد خرید حذف شد');
+            };
+            
+            window.changeModalImage = function(element) {
+                modalMainImage.src = element.src;
+                document.querySelectorAll('.modal-thumb').forEach(thumb => thumb.classList.remove('active'));
+                element.classList.add('active');
+            };
+            
+            // راه‌اندازی اولیه
+            updateCartDisplay();
+
+            // زوم هاور
+            const zoomContainers = document.querySelectorAll('.zoom-container');
+            
+            zoomContainers.forEach(container => {
+                const img = container.querySelector('.zoomable-image');
+                
+                container.addEventListener('mousemove', function(e) {
+                    const { left, top, width, height } = container.getBoundingClientRect();
+                    const x = (e.clientX - left) / width;
+                    const y = (e.clientY - top) / height;
+                    
+                    img.style.transformOrigin = `${x * 100}% ${y * 100}%`;
+                    img.style.transform = 'scale(1.5)';
+                });
+                
+                container.addEventListener('mouseleave', function() {
+                    img.style.transform = 'scale(1)';
+                });
+            });
+            
+            // منوی موبایل
+            const mobileToggle = document.querySelector('.mobile-toggle');
+            
+            if (mobileToggle) {
+                const navMenu = document.querySelector('.nav-menu');
+                
+                mobileToggle.addEventListener('click', function() {
+                    if (navMenu.style.display === 'flex') {
+                        navMenu.style.display = 'none';
+                    } else {
+                        navMenu.style.display = 'flex';
+                        navMenu.style.flexDirection = 'column';
+                        navMenu.style.position = 'absolute';
+                        navMenu.style.top = '100%';
+                        navMenu.style.right = '0';
+                        navMenu.style.background = 'white';
+                        navMenu.style.width = '250px';
+                        navMenu.style.padding = '1rem';
+                        navMenu.style.boxShadow = 'var(--shadow)';
+                        navMenu.style.zIndex = '99';
+                    }
+                });
+                
+                document.addEventListener('click', function(e) {
+                    if (!e.target.closest('.mobile-toggle') && !e.target.closest('.nav-menu')) {
+                        navMenu.style.display = '';
+                    }
+                });
+            }
+        });
+        // ... existing code ...
+
+// لودینگ اسکلتی حرفه‌ای (trend 2025)
+document.addEventListener('DOMContentLoaded', function () {
+    // ساختار اسکلت لودینگ
+    const skeleton = document.createElement('div');
+    skeleton.id = 'skeleton-loader';
+    skeleton.innerHTML = `
+      <style>
+        #skeleton-loader {
+          position: fixed;
+          inset: 0;
+          background: linear-gradient(120deg, #f5f7fa 60%, #e9eaf0 100%);
+          z-index: 9999;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: opacity 0.5s;
+        }
+        .skeleton-container {
+          width: 90vw;
+          max-width: 1200px;
+          display: grid;
+          grid-template-columns: 1fr 1.2fr;
+          gap: 2.5rem;
+          background: #fff;
+          border-radius: 24px;
+          box-shadow: 0 8px 32px rgba(93,63,211,0.10);
+          padding: 2.5rem;
+          animation: fadeIn 0.7s;
+        }
+        .skeleton-img, .skeleton-title, .skeleton-text, .skeleton-btn, .skeleton-badge, .skeleton-tab, .skeleton-review {
+          background: linear-gradient(90deg, #ececec 25%, #f5f5f5 50%, #ececec 75%);
+          background-size: 200% 100%;
+          animation: skeleton-loading 1.2s infinite linear;
+          border-radius: 12px;
+        }
+        .skeleton-img {
+          width: 320px;
+          height: 320px;
+          border-radius: 24px;
+          margin-bottom: 1.5rem;
+        }
+        .skeleton-thumbs {
+          display: flex;
+          gap: 0.5rem;
+        }
+        .skeleton-thumb {
+          width: 60px;
+          height: 60px;
+          border-radius: 10px;
+        }
+        .skeleton-title {
+          width: 60%;
+          height: 32px;
+          margin-bottom: 1.2rem;
+        }
+        .skeleton-badge {
+          width: 80px;
+          height: 20px;
+          margin-bottom: 0.7rem;
+        }
+        .skeleton-text {
+          width: 100%;
+          height: 16px;
+          margin-bottom: 0.7rem;
+        }
+        .skeleton-btn {
+          width: 160px;
+          height: 44px;
+          margin-top: 1.5rem;
+        }
+        .skeleton-tabs {
+          display: flex;
+          gap: 1rem;
+          margin: 2rem 0 1rem 0;
+        }
+        .skeleton-tab {
+          width: 100px;
+          height: 28px;
+        }
+        .skeleton-reviews {
+          margin-top: 1.5rem;
+        }
+        .skeleton-review {
+          width: 100%;
+          height: 48px;
+          margin-bottom: 0.8rem;
+        }
+        @keyframes skeleton-loading {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+        @keyframes fadeIn {
+          from { opacity: 0; transform: scale(0.98);}
+          to { opacity: 1; transform: scale(1);}
+        }
+        @media (max-width: 900px) {
+          .skeleton-container { grid-template-columns: 1fr; padding: 1.2rem;}
+          .skeleton-img { width: 100%; height: 220px;}
+        }
+      </style>
+      <div class="skeleton-container">
+        <div>
+          <div class="skeleton-img"></div>
+          <div class="skeleton-thumbs">
+            <div class="skeleton-thumb skeleton-img"></div>
+            <div class="skeleton-thumb skeleton-img"></div>
+            <div class="skeleton-thumb skeleton-img"></div>
+            <div class="skeleton-thumb skeleton-img"></div>
+          </div>
+        </div>
+        <div>
+          <div class="skeleton-badge"></div>
+          <div class="skeleton-title"></div>
+          <div class="skeleton-text"></div>
+          <div class="skeleton-text" style="width:80%"></div>
+          <div class="skeleton-text" style="width:60%"></div>
+          <div class="skeleton-btn"></div>
+          <div class="skeleton-tabs">
+            <div class="skeleton-tab"></div>
+            <div class="skeleton-tab"></div>
+            <div class="skeleton-tab"></div>
+          </div>
+          <div class="skeleton-reviews">
+            <div class="skeleton-review"></div>
+            <div class="skeleton-review"></div>
+          </div>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(skeleton);
+
+    // حذف لودینگ بعد از 5 ثانیه
+    setTimeout(() => {
+        skeleton.style.opacity = '0';
+        setTimeout(() => {
+            skeleton.remove();
+        }, 500);
+    }, 3000);
+});
+
+// ... existing code ...
+    </script>
+</body>
+</html> 
